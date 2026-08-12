@@ -2,9 +2,31 @@
   "name": "codex-usage",
   "displayName": "Codex Usage",
   "description": "Show Codex usage and spend-limit status in the VS Code status bar.",
-  "version": "0.1.2",
-  "publisher": "local",
+  "version": "0.1.3",
+  "publisher": "JackCarruthers-Vix",
   "license": "MIT",
+  "icon": "images/usage-gauge-icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/jcarruthers-vix/vscode-codex-usage-checker.git"
+  },
+  "homepage": "https://github.com/jcarruthers-vix/vscode-codex-usage-checker#readme",
+  "bugs": {
+    "url": "https://github.com/jcarruthers-vix/vscode-codex-usage-checker/issues"
+  },
+  "keywords": [
+    "codex",
+    "usage",
+    "quota",
+    "spend limit",
+    "rate limit",
+    "status bar"
+  ],
+  "galleryBanner": {
+    "color": "#101827",
+    "theme": "dark"
+  },
+  "pricing": "Free",
   "engines": {
     "vscode": "^1.90.0"
   },
