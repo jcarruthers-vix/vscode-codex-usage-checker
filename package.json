@@ -1,8 +1,8 @@
 {
-  "name": "codex-usage",
-  "displayName": "Codex Usage",
-  "description": "Show Codex usage and spend-limit status in the VS Code status bar.",
-  "version": "0.1.3",
+  "name": "codex-usage-business",
+  "displayName": "Codex Usage (Business)",
+  "description": "Show Codex Business usage and spend-limit status in the VS Code status bar.",
+  "version": "0.1.6",
   "publisher": "JackCarruthers-Vix",
   "license": "MIT",
   "icon": "images/usage-gauge-icon.png",
@@ -35,30 +35,30 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:codexUsage.refresh"
+    "onCommand:codexUsageBiz.refresh"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "codexUsage.refresh",
+        "command": "codexUsageBiz.refresh",
         "title": "Codex Usage: Refresh"
       }
     ],
     "configuration": {
       "title": "Codex Usage",
       "properties": {
-        "codexUsage.accountDirectory": {
+        "codexUsageBiz.accountDirectory": {
           "type": "string",
           "default": "~/.codex",
           "description": "Directory containing the Codex auth file."
         },
-        "codexUsage.accountName": {
+        "codexUsageBiz.accountName": {
           "type": "string",
           "default": "",
           "description": "Optional account name. Loads <accountName>.auth.json instead of auth.json."
         },
-        "codexUsage.dateLocale": {
+        "codexUsageBiz.dateLocale": {
           "type": "string",
           "default": "",
           "examples": [
@@ -68,13 +68,13 @@
           ],
           "description": "Optional BCP 47 locale for dates, such as en-AU. When empty, the VS Code display language is used."
         },
-        "codexUsage.refreshIntervalMinutes": {
+        "codexUsageBiz.refreshIntervalMinutes": {
           "type": "number",
           "default": 5,
           "minimum": 0,
           "description": "Automatic refresh interval in minutes. Set to 0 to disable automatic refresh."
         },
-        "codexUsage.requestTimeoutSeconds": {
+        "codexUsageBiz.requestTimeoutSeconds": {
           "type": "number",
           "default": 30,
           "minimum": 1,

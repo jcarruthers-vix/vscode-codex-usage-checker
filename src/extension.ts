@@ -36,16 +36,16 @@ class CodexUsageStatus implements vscode.Disposable {
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.statusBarItem.name = "Codex Usage";
-    this.statusBarItem.command = "codexUsage.refresh";
+    this.statusBarItem.command = "codexUsageBiz.refresh";
     this.statusBarItem.text = "$(sync~spin) Codex usage";
     this.statusBarItem.tooltip = "Checking Codex usage...";
     this.statusBarItem.show();
 
     context.subscriptions.push(
       this.statusBarItem,
-      vscode.commands.registerCommand("codexUsage.refresh", () => this.refresh(true)),
+      vscode.commands.registerCommand("codexUsageBiz.refresh", () => this.refresh(true)),
       vscode.workspace.onDidChangeConfiguration((event) => {
-        if (event.affectsConfiguration("codexUsage")) {
+        if (event.affectsConfiguration("codexUsageBiz")) {
           this.scheduleRefresh();
           void this.refresh(false);
         }
@@ -75,7 +75,7 @@ class CodexUsageStatus implements vscode.Disposable {
 
   private async performRefresh(showErrors: boolean): Promise<void> {
     try {
-      const config = vscode.workspace.getConfiguration("codexUsage");
+      const config = vscode.workspace.getConfiguration("codexUsageBiz");
       const authPath = getAuthPath(
         config.get<string>("accountDirectory", "~/.codex"),
         config.get<string>("accountName", ""),
@@ -103,7 +103,7 @@ class CodexUsageStatus implements vscode.Disposable {
       : undefined;
 
     const tooltip = new vscode.MarkdownString(undefined, true);
-    tooltip.isTrusted = { enabledCommands: ["codexUsage.refresh"] };
+    tooltip.isTrusted = { enabledCommands: ["codexUsageBiz.refresh"] };
     tooltip.appendMarkdown("### Codex usage\n\n");
     tooltip.appendMarkdown(
       `**Status:** ${summary.limitReached ? `Limit reached${summary.reachedReason ? ` (${escapeMarkdown(summary.reachedReason)})` : ""}` : "Available"}  \n`,
@@ -128,7 +128,7 @@ class CodexUsageStatus implements vscode.Disposable {
     }
 
     tooltip.appendMarkdown(`\n_Last checked: ${formatDate(new Date())}_  \n`);
-    tooltip.appendMarkdown("[$(refresh) Refresh now](command:codexUsage.refresh)");
+    tooltip.appendMarkdown("[$(refresh) Refresh now](command:codexUsageBiz.refresh)");
     this.statusBarItem.tooltip = tooltip;
   }
 
@@ -139,10 +139,10 @@ class CodexUsageStatus implements vscode.Disposable {
     );
 
     const tooltip = new vscode.MarkdownString(undefined, true);
-    tooltip.isTrusted = { enabledCommands: ["codexUsage.refresh"] };
+    tooltip.isTrusted = { enabledCommands: ["codexUsageBiz.refresh"] };
     tooltip.appendMarkdown("### Codex usage unavailable\n\n");
     tooltip.appendMarkdown(`${escapeMarkdown(message)}\n\n`);
-    tooltip.appendMarkdown("[$(refresh) Try again](command:codexUsage.refresh)");
+    tooltip.appendMarkdown("[$(refresh) Try again](command:codexUsageBiz.refresh)");
     this.statusBarItem.tooltip = tooltip;
   }
 
@@ -153,7 +153,7 @@ class CodexUsageStatus implements vscode.Disposable {
     }
 
     const minutes = vscode.workspace
-      .getConfiguration("codexUsage")
+      .getConfiguration("codexUsageBiz")
       .get<number>("refreshIntervalMinutes", 5);
     if (minutes > 0) {
       this.refreshTimer = setInterval(() => void this.refresh(false), minutes * 60_000);
@@ -354,7 +354,7 @@ function formatDate(value: Date | undefined): string {
   }
 
   const configuredLocale = vscode.workspace
-    .getConfiguration("codexUsage")
+    .getConfiguration("codexUsageBiz")
     .get<string>("dateLocale", "")
     .trim();
   const locale = configuredLocale || vscode.env.language || undefined;

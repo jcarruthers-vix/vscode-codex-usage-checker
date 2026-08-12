@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.1.6
+
+- Rename the command and settings namespace from `codexUsage` to `codexUsageBiz`.
+
+## 0.1.5
+
+- Rename the extension to Codex Usage (Business).
+
+## 0.1.4
+
+- Use direct GitHub image URLs so screenshots render reliably in locally installed VSIX packages.
+
 ## 0.1.3
 
 - Add Marketplace icon, banner, search keywords, and project resource links.

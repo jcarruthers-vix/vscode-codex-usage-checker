@@ -1,6 +1,6 @@
-# Codex Usage
+# Codex Usage (Business)
 
-Displays Codex usage and spend-limit information in the VS Code status bar.
+Displays Codex Business usage and spend-limit information in the VS Code status bar.
 
 The extension reads the same local credentials as the Codex CLI from
 `~/.codex/auth.json` and requests usage directly from the ChatGPT usage API.
@@ -10,12 +10,12 @@ Credentials remain in the local VS Code extension host and are never logged.
 
 The status bar shows the current percentage of the applicable Codex spend limit.
 
-![Codex Usage status-bar item showing 11 percent usage](images/statusbar_usage_summary.png)
+![Codex Usage status-bar item showing 11 percent usage](https://raw.githubusercontent.com/jcarruthers-vix/vscode-codex-usage-checker/main/images/statusbar_usage_summary.png)
 
 Hover over the status-bar item to see the usage, remaining allowance, reset time,
 account, plan, and a refresh link.
 
-![Codex Usage hover panel with spend-limit details and refresh link](images/statusbar_hover_detail_information.png)
+![Codex Usage hover panel with spend-limit details and refresh link](https://raw.githubusercontent.com/jcarruthers-vix/vscode-codex-usage-checker/main/images/statusbar_hover_detail_information.png)
 
 ## Features
 
@@ -37,9 +37,9 @@ Host. To install it normally, package it as a VSIX and install that VSIX in VS C
 
 ## Settings
 
-- `codexUsage.accountDirectory`: directory containing Codex auth files.
-- `codexUsage.accountName`: optional named account, loaded as `<name>.auth.json`.
-- `codexUsage.dateLocale`: optional date locale such as `en-AU`; defaults to the
+- `codexUsageBiz.accountDirectory`: directory containing Codex auth files.
+- `codexUsageBiz.accountName`: optional named account, loaded as `<name>.auth.json`.
+- `codexUsageBiz.dateLocale`: optional date locale such as `en-AU`; defaults to the
   VS Code display language.
-- `codexUsage.refreshIntervalMinutes`: automatic refresh interval; `0` disables it.
-- `codexUsage.requestTimeoutSeconds`: API request timeout.
+- `codexUsageBiz.refreshIntervalMinutes`: automatic refresh interval; `0` disables it.
+- `codexUsageBiz.requestTimeoutSeconds`: API request timeout.
