@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## 0.1.8
+
+- Include the full usage API response in explicit diagnostics output, with a sharing reminder.
+
+## 0.1.7
+
+- Add a diagnostic command that reports response-field availability without logging credentials.
+
 ## 0.1.6
 
 - Rename the command and settings namespace from `codexUsage` to `codexUsageBiz`.

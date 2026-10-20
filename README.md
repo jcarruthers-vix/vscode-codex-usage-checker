@@ -22,8 +22,16 @@ account, plan, and a refresh link.
 - Compact current usage percentage in the status bar.
 - Warning state when a rate limit or spend limit has been reached.
 - Hover details for usage, remaining allowance, reset time, account, and plan.
-- Click-to-refresh status bar item and `Codex Usage: Refresh` command.
+- Click-to-refresh status bar item and `Codex Usage (Business): Refresh` command.
 - Automatic refresh every five minutes by default.
+
+## Diagnostics
+
+If some usage details are unavailable, run `Codex Usage (Business): Show Diagnostics`
+from the Command Palette. It refreshes the data and opens the `Codex Usage (Business)`
+Output panel with the API response fields and display-field availability. Access tokens,
+and authentication data are never included. The raw API response does include account
+and usage data, including the email address and account IDs, so redact it before sharing.
 
 ## Development
 

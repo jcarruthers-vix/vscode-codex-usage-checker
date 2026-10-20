@@ -26,13 +26,22 @@ interface UsageSummary {
   limitSource: string | undefined;
 }
 
+interface UsageResponse {
+  data: JsonObject;
+  statusCode: number;
+}
+
 class CodexUsageStatus implements vscode.Disposable {
   private readonly statusBarItem = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     100,
   );
+  private readonly outputChannel = vscode.window.createOutputChannel(
+    "Codex Usage (Business)",
+  );
   private refreshTimer: NodeJS.Timeout | undefined;
   private refreshInFlight: Promise<void> | undefined;
+  private diagnosticsActive = false;
 
   constructor(private readonly context: vscode.ExtensionContext) {
     this.statusBarItem.name = "Codex Usage";
@@ -44,6 +53,10 @@ class CodexUsageStatus implements vscode.Disposable {
     context.subscriptions.push(
       this.statusBarItem,
       vscode.commands.registerCommand("codexUsageBiz.refresh", () => this.refresh(true)),
+      vscode.commands.registerCommand(
+        "codexUsageBiz.showDiagnostics",
+        () => this.showDiagnostics(),
+      ),
       vscode.workspace.onDidChangeConfiguration((event) => {
         if (event.affectsConfiguration("codexUsageBiz")) {
           this.scheduleRefresh();
@@ -51,6 +64,7 @@ class CodexUsageStatus implements vscode.Disposable {
         }
       }),
     );
+    context.subscriptions.push(this.outputChannel);
 
     this.scheduleRefresh();
   }
@@ -82,15 +96,81 @@ class CodexUsageStatus implements vscode.Disposable {
       );
       const credentials = await loadCredentials(authPath);
       const timeoutSeconds = config.get<number>("requestTimeoutSeconds", 30);
-      const usage = await requestUsage(credentials, timeoutSeconds * 1000);
-      this.renderUsage(summarizeUsage(usage));
+      const response = await requestUsage(credentials, timeoutSeconds * 1000);
+      const summary = summarizeUsage(response.data);
+      this.renderUsage(summary);
+      if (this.diagnosticsActive) {
+        this.logUsageDiagnostics(authPath, timeoutSeconds, response, summary);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      this.outputChannel.appendLine(
+        `[${new Date().toISOString()}] Refresh failed: ${sanitizeDiagnosticText(message)}`,
+      );
       this.renderError(message);
       if (showErrors) {
         void vscode.window.showErrorMessage(`Unable to refresh Codex usage: ${message}`);
       }
     }
+  }
+
+  private async showDiagnostics(): Promise<void> {
+    this.outputChannel.clear();
+    this.outputChannel.appendLine("Codex Usage (Business) diagnostics");
+    this.outputChannel.appendLine(`Timestamp: ${new Date().toISOString()}`);
+    this.outputChannel.appendLine(`VS Code: ${vscode.version}`);
+    this.outputChannel.appendLine(`Extension host: ${vscode.env.remoteName ?? "local"}`);
+    this.outputChannel.appendLine(
+      "The raw response below includes account and usage information. Redact it before sharing.",
+    );
+    this.outputChannel.appendLine("");
+
+    this.diagnosticsActive = true;
+    try {
+      await this.refresh(false);
+    } finally {
+      this.diagnosticsActive = false;
+      this.outputChannel.show(true);
+    }
+  }
+
+  private logUsageDiagnostics(
+    authPath: string,
+    timeoutSeconds: number,
+    response: UsageResponse,
+    summary: UsageSummary,
+  ): void {
+    const data = response.data;
+    const spendControl = asObject(data.spend_control);
+    const individualLimit = asObject(spendControl?.individual_limit);
+
+    this.outputChannel.appendLine("Usage request succeeded.");
+    this.outputChannel.appendLine(`HTTP status: ${response.statusCode}`);
+    this.outputChannel.appendLine(`Auth file: ${sanitizePath(authPath)}`);
+    this.outputChannel.appendLine(`Request timeout: ${timeoutSeconds} seconds`);
+    this.outputChannel.appendLine(
+      `Response fields: ${Object.keys(data).sort().join(", ") || "none"}`,
+    );
+    this.outputChannel.appendLine(
+      `Spend-limit fields: ${individualLimit ? Object.keys(individualLimit).sort().join(", ") || "none" : "spend_control.individual_limit unavailable"}`,
+    );
+    this.outputChannel.appendLine("");
+    this.outputChannel.appendLine("Display field availability:");
+    this.outputChannel.appendLine(`  Usage: ${fieldAvailability(summary.used, summary.limit)}`);
+    this.outputChannel.appendLine(`  Usage percentage: ${fieldAvailability(summary.usedPercent)}`);
+    this.outputChannel.appendLine(`  Remaining allowance: ${fieldAvailability(summary.remaining)}`);
+    this.outputChannel.appendLine(`  Reset time: ${fieldAvailability(summary.resetAt)}`);
+    this.outputChannel.appendLine(`  Account: ${fieldAvailability(summary.email)}`);
+    this.outputChannel.appendLine(`  Plan: ${fieldAvailability(summary.planType)}`);
+    this.outputChannel.appendLine(`  Limit source: ${fieldAvailability(summary.limitSource)}`);
+    this.outputChannel.appendLine(
+      `  Limit reached: ${summary.limitReached ? "reported as reached" : "not reported as reached"}`,
+    );
+    this.outputChannel.appendLine("");
+    this.outputChannel.appendLine(
+      "Raw API response (no access token is included, but redact before sharing):",
+    );
+    this.outputChannel.appendLine(JSON.stringify(data, null, 2));
   }
 
   private renderUsage(summary: UsageSummary): void {
@@ -212,7 +292,7 @@ async function loadCredentials(authPath: string): Promise<Credentials> {
   return { accessToken, accountId };
 }
 
-function requestUsage(credentials: Credentials, timeoutMs: number): Promise<JsonObject> {
+function requestUsage(credentials: Credentials, timeoutMs: number): Promise<UsageResponse> {
   return new Promise((resolve, reject) => {
     const request = https.get(
       USAGE_URL,
@@ -249,7 +329,7 @@ function requestUsage(credentials: Credentials, timeoutMs: number): Promise<Json
             reject(new Error("Usage API returned an unexpected response"));
             return;
           }
-          resolve(data);
+          resolve({ data, statusCode: response.statusCode ?? 200 });
         });
       },
     );
@@ -385,4 +465,23 @@ function getApiError(value: unknown): string | undefined {
 
 function escapeMarkdown(value: string): string {
   return value.replace(/[\\`*_{}\[\]()<>#+\-.!|]/g, "\\$&");
+}
+
+function fieldAvailability(...values: unknown[]): string {
+  return values.every((value) => value !== undefined) ? "available" : "unavailable";
+}
+
+function sanitizePath(value: string): string {
+  const homeDirectory = os.homedir();
+  return value.startsWith(homeDirectory)
+    ? `~${value.slice(homeDirectory.length)}`
+    : "configured path";
+}
+
+function sanitizeDiagnosticText(value: string): string {
+  return value
+    .replaceAll(os.homedir(), "~")
+    .replace(/Bearer\s+\S+/gi, "Bearer [redacted]")
+    .replace(/user-[A-Za-z0-9_-]+/g, "user-[redacted]")
+    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email redacted]");
 }

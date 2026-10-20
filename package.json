@@ -2,7 +2,7 @@
   "name": "codex-usage-business",
   "displayName": "Codex Usage (Business)",
   "description": "Show Codex Business usage and spend-limit status in the VS Code status bar.",
-  "version": "0.1.6",
+  "version": "0.1.8",
   "publisher": "JackCarruthers-Vix",
   "license": "MIT",
   "icon": "images/usage-gauge-icon.png",
@@ -35,18 +35,23 @@
   ],
   "activationEvents": [
     "onStartupFinished",
-    "onCommand:codexUsageBiz.refresh"
+    "onCommand:codexUsageBiz.refresh",
+    "onCommand:codexUsageBiz.showDiagnostics"
   ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
         "command": "codexUsageBiz.refresh",
-        "title": "Codex Usage: Refresh"
+        "title": "Codex Usage (Business): Refresh"
+      },
+      {
+        "command": "codexUsageBiz.showDiagnostics",
+        "title": "Codex Usage (Business): Show Diagnostics"
       }
     ],
     "configuration": {
-      "title": "Codex Usage",
+      "title": "Codex Usage (Business)",
       "properties": {
         "codexUsageBiz.accountDirectory": {
           "type": "string",
